@@ -1,5 +1,8 @@
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.Scanner;
+
+import com.sun.net.httpserver.HttpServer;
 
 public class Main {
 	public static void main(String[] argv) {
@@ -7,7 +10,7 @@ public class Main {
 		Instructions inst = new Instructions();
 		Scanner scan = new Scanner(System.in);
 		System.out.printf("Staring Server in Main....\n");
-		ServerSocket socket = server.create();
+		HttpServer socket = server.create();
 		System.out.println("What would you like to do?");
 		String myLine = scan.nextLine();
 		while (inst.getResult(myLine) == true) {
@@ -15,6 +18,10 @@ public class Main {
 			myLine = scan.nextLine();
 		}
 		scan.close();
-		server.close(socket);
+		try {
+			server.close(socket);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }
