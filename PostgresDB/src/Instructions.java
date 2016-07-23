@@ -42,21 +42,24 @@ public class Instructions {
 				instruction = instruction.toLowerCase();
 				switch (instruction) {
 				case "insert":
-					Scanner scan = new Scanner(System.in);;
+					Scanner scan = new Scanner(System.in);
 					String name;
 					String swiftcode;
 					System.out.printf("\nName of Bank?\n");
 					name = scan.nextLine().trim();
 					System.out.printf("\nSwiftCode?\n");
 					swiftcode = scan.nextLine().trim();
-					if(name==null || swiftcode==null || name.equalsIgnoreCase("") ||swiftcode.equalsIgnoreCase("")){
-						System.out.println("You must provide a Bank Name and SwiftCode!");
+					if (name == null || swiftcode == null
+							|| name.equalsIgnoreCase("")
+							|| swiftcode.equalsIgnoreCase("")) {
+						System.out
+								.println("You must provide a Bank Name and SwiftCode!");
 						break;
 					}
 					System.out.println("Trying INSERT");
 					String insert_stament = "INSERT INTO public.\"Banks\"(\"Name\", \"swiftcode\") VALUES('"
 							+ name + "'," + "'" + swiftcode + "')";
-					//System.out.printf("%s", insert_stament);
+					// System.out.printf("%s", insert_stament);
 					executeStatement(con, stmt, rs, instruction, insert_stament);
 					break;
 				case "select":
@@ -66,12 +69,14 @@ public class Instructions {
 					break;
 				case "delete":
 					System.out.println("Trying DELETE");
-					scan = new Scanner(System.in);;
+					scan = new Scanner(System.in);
 					System.out.println("Provide Id");
-					String id = scan.nextLine().trim();		
-					String delete_statement = "DELETE FROM public.\"Banks\" where public.\"Banks\".\"ID\"="+id;
+					String id = scan.nextLine().trim();
+					String delete_statement = "DELETE FROM public.\"Banks\" where public.\"Banks\".\"ID\"="
+							+ id;
 					System.out.println(delete_statement);
-					executeStatement(con, stmt, rs, instruction, delete_statement);
+					executeStatement(con, stmt, rs, instruction,
+							delete_statement);
 					break;
 				case "update":
 					System.out.println("Trying UPDATE");
@@ -105,7 +110,8 @@ public class Instructions {
 			ResultSet rs, String instruction, String query) {
 		try {
 			stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, 1);
-			if (instruction.equalsIgnoreCase("INSERT") || instruction.equalsIgnoreCase("DELETE")) {
+			if (instruction.equalsIgnoreCase("INSERT")
+					|| instruction.equalsIgnoreCase("DELETE")) {
 				stmt.executeUpdate(query); // returns int but not used
 			} else {
 				rs = stmt.executeQuery(query);
