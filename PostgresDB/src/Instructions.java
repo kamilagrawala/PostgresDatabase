@@ -64,8 +64,10 @@ public class Instructions {
 					break;
 				case "select":
 					System.out.println("Trying SELECT");
+					/*executeStatement(con, stmt, rs, instruction,
+							"Select * from public.\"Banks\"");*/
 					executeStatement(con, stmt, rs, instruction,
-							"Select * from public.\"Banks\"");
+							"Select * from svBanks");
 					break;
 				case "delete":
 					System.out.println("Trying DELETE");
