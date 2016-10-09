@@ -12,13 +12,29 @@ import com.sun.net.httpserver.HttpServer;
 
 public class Server {
 
-	public HttpServer create() {
+	public HttpServer create() throws IOException, BindException {
+		HttpServer httpServer = null;
+		try {
+			httpServer = HttpServer.create(new InetSocketAddress(8080), 0);
+		} catch (BindException E) {
+			Logger.getLogger(Server.class.getName()).log(Level.INFO,
+					"Server already running on port 8080, using that connection (BindException)");
+			return httpServer;
+		}
+		httpServer.createContext("/", new MyHandler());
+		httpServer.setExecutor(null);
+		httpServer.start();
+
+		return httpServer;
+	}
+
+	public HttpServer connectExisting() {
 		HttpServer httpServer = null;
 		try {
 			httpServer = HttpServer.create(new InetSocketAddress(8080), 0);
 			httpServer.createContext("/", new MyHandler());
 			httpServer.setExecutor(null);
-			httpServer.start();
+			httpServer.getAddress();
 		} catch (IOException ex) {
 			Logger.getLogger(Server.class.getName())
 					.log(Level.SEVERE, null, ex);
@@ -26,7 +42,7 @@ public class Server {
 		return httpServer;
 	}
 
-	public boolean close(HttpServer httpServer) throws IOException{
+	public boolean close(HttpServer httpServer) throws IOException {
 		httpServer.stop(0);
 		System.out.printf("Server Socket Closed Successfully...\n");
 		return true;
@@ -44,12 +60,10 @@ public class Server {
 			outputStream.close();
 		}
 	}
-	
-	static String readFile(String path, Charset encoding) 
-			  throws IOException 
-			{
+
+	static String readFile(String path, Charset encoding) throws IOException {
 		byte[] encoded = Files.readAllBytes(Paths.get(path));
-			  return new String(encoded, encoding);
-			}
-	
+		return new String(encoded, encoding);
+	}
+
 }

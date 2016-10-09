@@ -5,6 +5,9 @@ import org.json.JSONArray;
 
 public class Instructions {
 
+	private Scanner scan;
+	boolean login = false;
+
 	public boolean getResult(String instruction) {
 		Connection con = null;
 		ResultSet rs = null;
@@ -37,12 +40,14 @@ public class Instructions {
 		}
 
 		if (con != null) {
-			// System.out.println("Database controllable now!");
+			System.out.println("Database controllable now!");
 			try {
+				setCurrentUser(con, stmt, rs);
+
 				instruction = instruction.toLowerCase();
+				scan = new Scanner(System.in);
 				switch (instruction) {
 				case "insert":
-					Scanner scan = new Scanner(System.in);
 					String name;
 					String swiftcode;
 					System.out.printf("\nName of Bank?\n");
@@ -64,10 +69,21 @@ public class Instructions {
 					break;
 				case "select":
 					System.out.println("Trying SELECT");
-					/*executeStatement(con, stmt, rs, instruction,
-							"Select * from public.\"Banks\"");*/
-					executeStatement(con, stmt, rs, instruction,
-							"Select * from svBanks");
+					System.out
+							.println("Which bank do you want to search for? ( use * for getting back all results)");
+					String userResponse = scan.nextLine().trim();
+					if (userResponse.equalsIgnoreCase("*")) {
+						executeStatement(con, stmt, rs, instruction,
+								"Select * from svBanks");
+					} else if (!userResponse.isEmpty() && userResponse != null) {
+						executeStatement(con, stmt, rs, instruction,
+								"Select * from svBanks where svbanks.swiftcode='"
+										+ userResponse + "'");
+					} else {
+						System.out.println("Correct Swiftcode is required!");
+						break;
+					}
+
 					break;
 				case "delete":
 					System.out.println("Trying DELETE");
@@ -113,7 +129,8 @@ public class Instructions {
 		try {
 			stmt = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, 1);
 			if (instruction.equalsIgnoreCase("INSERT")
-					|| instruction.equalsIgnoreCase("DELETE")) {
+					|| instruction.equalsIgnoreCase("DELETE")
+					|| instruction.equalsIgnoreCase("CREATEVIEW")) {
 				stmt.executeUpdate(query); // returns int but not used
 			} else {
 				rs = stmt.executeQuery(query);
@@ -132,7 +149,7 @@ public class Instructions {
 		return rs;
 	}
 
-	private void loopAndPrintResult(ResultSet rs) {
+	private boolean loopAndPrintResult(ResultSet rs) {
 		// System.out.println("Inside loopAndPrint()");
 		try {
 			ResultSetMetaData rsmd = rs.getMetaData();
@@ -140,6 +157,10 @@ public class Instructions {
 			StringBuilder sb_coloumn = new StringBuilder();
 			StringBuilder sb_row = new StringBuilder();
 			System.out.println();
+			if (rs.next() == false) {
+				System.out.printf("No results found\n");
+				return false;
+			}
 			for (int i = 1; i <= columnsNumber; i++) {
 				sb_coloumn.append(String.format("| %-30s",
 						rsmd.getColumnLabel(i)));
@@ -147,16 +168,19 @@ public class Instructions {
 			System.out.println(sb_coloumn);
 			rs.beforeFirst();
 			while (rs.next()) {
-				sb_row.append(String.format("| %-30s|%-31s|%s\n",
-						rs.getObject("name").toString().trim(),
+				sb_row.append(String.format("|%-31s|%-31s|%-31s|%s\n", rs
+						.getObject("name").toString().trim(),
 						rs.getObject("swiftcode").toString().trim(), rs
-								.getObject("id").toString()));
+								.getObject("id").toString(),
+						rs.getObject("bankid").toString()));
 				sb_row.append(String
-						.format("--------------------------------------------------------------------------------\n"));
+						.format("-------------------------------------------------------------------------------------------------------------\n"));
 			}
 			System.out.println(sb_row);
+			return true;
 		} catch (SQLException e) {
 			e.printStackTrace();
+			return false;
 		}
 	}
 
@@ -182,5 +206,30 @@ public class Instructions {
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+	public boolean setCurrentUser(Connection con, Statement stmt, ResultSet rs) {
+		if (login == false) {
+			String username;
+			scan = new Scanner(System.in);
+			System.out.println("UserName: ");
+			username = scan.nextLine().trim().toLowerCase();
+			if (username == null || username.isEmpty()) {
+				System.out.print("Invalid Username provided!");
+				return false;
+			} else {
+				System.out.println("Creating View.....");
+				String view_creation = "Create or Replace View svBanks AS SELECT public.\"Users\".\"ID\", public.\"Banks\".\"Name\",public.\"Banks\".\"swiftcode\",public.\"Banks\".\"ID\" AS BankId FROM public.\"Banks\""
+						+ "INNER JOIN public.\"Users\" ON public.\"Banks\".\"swiftcode\"=public.\"Users\".\"Access\" where public.\"Users\".\"Name\"='"
+						+ username + "';";
+				System.out.println("****" + view_creation + "****");
+				executeStatement(con, stmt, rs, "CREATEVIEW", view_creation);
+				login = true;
+				return true;
+			}
+		} else {
+			System.out.println("Login was true!");
+			return true;
+		}
 	}
 }
