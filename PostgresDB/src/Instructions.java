@@ -43,7 +43,6 @@ public class Instructions {
 			System.out.println("Database controllable now!");
 			try {
 				setCurrentUser(con, stmt, rs);
-
 				instruction = instruction.toLowerCase();
 				scan = new Scanner(System.in);
 				switch (instruction) {
