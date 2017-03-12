@@ -53,7 +53,7 @@ public class Server {
 		@Override
 		public void handle(HttpExchange he) throws IOException {
 			int responseCode_OK = 200;
-			String response = "How to do this?";
+			String response = "Server is Running....";
 			he.sendResponseHeaders(responseCode_OK, response.length());
 			OutputStream outputStream = he.getResponseBody();
 			outputStream.write(response.getBytes());
